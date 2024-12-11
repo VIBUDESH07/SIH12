@@ -8,7 +8,7 @@ deepface==0.0.1
 onnxruntime
 gunicorn
 eventlet
-tensorflow
+tensorflow==2.1.0
 Keras
 keras
 tf-keras
