@@ -55,7 +55,7 @@ const LiveFaceWebSocket = () => {
   }, [isCameraAllowed, ws]);
 
   useEffect(() => {
-    const socket = require("socket.io-client")("http://172.21.4.242:5000");
+    const socket = require("socket.io-client")("https://sihback.onrender.com");
     setWs(socket);
 
     socket.on("connect", () => {
