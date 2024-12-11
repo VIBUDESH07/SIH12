@@ -8,65 +8,30 @@ from src.face_detector import YOLOv5
 from src.FaceAntiSpoofing import AntiSpoof
 from deepface import DeepFace
 from pymongo import MongoClient
-from twilio.rest import Client
-import time
-
-# Twilio setup
-TWILIO_ACCOUNT_SID = 'AC912ec1f56edf82775d7262c6f203ba17'
-TWILIO_AUTH_TOKEN = 'c6812a7d747e2ed2a7ee9c51ab87f405'
-TWILIO_PHONE_NUMBER = '+18644774589'
-
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
 
 client = MongoClient("mongodb+srv://vibudesh:040705@cluster0.bojv6ut.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-db = client["SIH"] 
-collection = db["face"]  
-
+db = client["SIH"]
+collection = db["face"]
 
 face_detector = YOLOv5('saved_models/yolov5s-face.onnx')
 anti_spoof = AntiSpoof('saved_models/AntiSpoofing_bin_1.5_128.onnx')
 
-
 client_aadhar_map = {}
 
-def fetch_phone_number(aadhaar_number):
-    """Fetch the phone number for the given Aadhaar number."""
-    user_data = collection.find_one({"roll_number": aadhaar_number})
-    if not user_data:
-        raise ValueError(f"Aadhaar number {aadhaar_number} not found in the database.")
-    
-    # Extract the phone number from the database document
-    phone_number = user_data.get("phone")
-    if not phone_number:
-        raise ValueError(f"No phone number found for Aadhaar number {aadhaar_number}.")
-    
-    return phone_number
-
 def fetch_known_face(aadhaar_number):
-    """Fetch the known face image for the given Aadhaar number."""
     user_data = collection.find_one({"roll_number": aadhaar_number})
     if not user_data:
         raise ValueError(f"Aadhaar number {aadhaar_number} not found in the database.")
-    
     
     binary_data = user_data["image"]
-    
-    
     base64_data = base64.b64encode(binary_data).decode('utf-8')
-    
-    
     img_data = base64.b64decode(base64_data)
-    
-    
     np_arr = np.frombuffer(img_data, np.uint8)
-    
-    
-    known_face_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR) 
+    known_face_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     
     return known_face_img
 
@@ -98,39 +63,19 @@ def make_prediction(img, face_detector, anti_spoof):
     return bbox, label, score
 
 def decode_base64_image(image_base64):
-    """Decode base64 image data into an OpenCV image."""
     image_data = base64.b64decode(image_base64.split(',')[1])
     np_arr = np.frombuffer(image_data, np.uint8)
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     return img
 
-def send_sms(phone_number, message):
-    """Send SMS using Twilio."""
-    try:
-        message = twilio_client.messages.create(
-            body=message,
-            from_=TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
-        print(f"Message sent to {phone_number}")
-    except Exception as e:
-        print(f"Error sending message: {e}")
-
 def process_image(image, aadhaar_number):
-    """Process the uploaded image for face matching."""
-    
-    
     client_id = request.sid
-
-    
     client_data = client_aadhar_map.get(client_id)
-
     
     if not client_data or "known_face_img" not in client_data:
         return "Known face image not found for this Aadhaar number."
 
     known_face_img = client_data["known_face_img"]
-    
     
     pred = make_prediction(image, face_detector, anti_spoof)
     if pred is not None:
@@ -141,9 +86,6 @@ def process_image(image, aadhaar_number):
             try:
                 result = DeepFace.verify(face_crop, known_face_img, model_name="VGG-Face")
                 if result["verified"]:
-                    # Fetch the phone number from the database
-                    phone_number = fetch_phone_number(aadhaar_number)
-                    send_sms(phone_number, "Your face has been verified and matched!")
                     return "REAL and MATCHED"
                 else:
                     return "NOT MATCHING"
@@ -155,12 +97,10 @@ def process_image(image, aadhaar_number):
 
 @socketio.on('connect')
 def handle_connect():
-    """Handle client connection."""
     print(f"Client connected: {request.sid}")
 
 @socketio.on('aadhaar_number')
 def handle_aadhaar(data):
-    """Store the Aadhaar number for the connected client."""
     aadhaar_number = data.get('aadhaar')
     if aadhaar_number:
         client_id = request.sid 
@@ -177,7 +117,6 @@ def handle_aadhaar(data):
 
 @socketio.on('process_image')
 def handle_process_image(data):
-    """Process the image sent by the client."""
     client_id = request.sid
     image_base64 = data.get('image')
 
@@ -199,7 +138,6 @@ def handle_process_image(data):
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    """Handle client disconnection."""
     client_id = request.sid
     if client_id in client_aadhar_map:
         del client_aadhar_map[client_id]
@@ -207,3 +145,4 @@ def handle_disconnect():
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)
+
