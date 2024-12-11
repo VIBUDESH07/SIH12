@@ -1,0 +1,57 @@
+{
+  "modelTopology": {
+    "class_name": "Sequential",
+    "config": {
+      "layers": [
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 32,
+            "activation": "relu",
+            "kernel_initializer": "glorotUniform",
+            "bias_initializer": "zeros",
+            "name": "dense",
+            "batch_input_shape": [null, 784]
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 10,
+            "activation": "softmax",
+            "name": "output"
+          }
+        }
+      ]
+    }
+  },
+  "weightsManifest": {
+    "paths": ["group1-shard1of1.bin", "group1-shard2of2.bin"],
+    "weights": [
+      {
+        "name": "dense/kernel",
+        "shape": [784, 32],
+        "dtype": "float32",
+        "quantization": [0, 0]
+      },
+      {
+        "name": "dense/bias",
+        "shape": [32],
+        "dtype": "float32",
+        "quantization": [0, 0]
+      },
+      {
+        "name": "output/kernel",
+        "shape": [32, 10],
+        "dtype": "float32",
+        "quantization": [0, 0]
+      },
+      {
+        "name": "output/bias",
+        "shape": [10],
+        "dtype": "float32",
+        "quantization": [0, 0]
+      }
+    ]
+  }
+}
