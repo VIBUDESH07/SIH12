@@ -4,12 +4,12 @@ Flask-SocketIO
 opencv-python-headless
 numpy
 pymongo
-deepface
+deepface==0.0.1
 onnxruntime
 gunicorn
 eventlet
-tensorflow
+tensorflow==2.1.0
 Keras
 keras
 tf-keras
-retinaface
+retinaface==0.0.6
