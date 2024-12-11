@@ -10,4 +10,6 @@ gunicorn
 eventlet
 tensorflow
 Keras
-
+keras
+tf-keras
+retinaface
