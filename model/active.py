@@ -1,3 +1,7 @@
+
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
@@ -12,7 +16,7 @@ from pymongo import MongoClient
 # Flask and SocketIO setup
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # MongoDB setup
 client = MongoClient("mongodb+srv://vibudesh:040705@cluster0.bojv6ut.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
