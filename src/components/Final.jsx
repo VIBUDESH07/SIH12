@@ -4,7 +4,7 @@ import { TiTick } from "react-icons/ti";
 import { useNavigate, useLocation } from "react-router-dom";
 import io from "socket.io-client";
 
-const SERVER_URL = "http://172.21.5.21:5000";
+const SERVER_URL = "http://172.21.4.242:5000";
 
 export default function Final() {
   const webcamRef = useRef(null);
