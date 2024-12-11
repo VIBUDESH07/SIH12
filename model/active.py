@@ -16,7 +16,7 @@ from pymongo import MongoClient
 # Flask and SocketIO setup
 app = Flask(__name__)
 # Enable CORS with specific allowed origins
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "*"}})  # For testing, replace '*' with specific domains for production.
 
 # Ensure SocketIO allows the same CORS policy
 
