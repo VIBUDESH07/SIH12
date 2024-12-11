@@ -143,6 +143,10 @@ def handle_disconnect():
         del client_aadhar_map[client_id]
     print(f"Client {client_id} disconnected")
 
+@app.route('/')
+def api_server():
+    return "Python SIH API SERVER"
+
 if __name__ == "__main__":
     # socketio.run(app, host="0.0.0.0", port=5000)
     socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
