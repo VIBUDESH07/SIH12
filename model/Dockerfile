@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy the requirements file into the container
 COPY requirements.txt /app/
 
-pip install jax==0.4.30 jaxlib==0.4.30
+RUN pip install jax==0.4.30 jaxlib==0.4.30
 
 # Install the dependencies
 RUN pip install --upgrade pip
