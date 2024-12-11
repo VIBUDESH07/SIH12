@@ -5,6 +5,7 @@ eventlet==0.31.0
 opencv-python-headless>=4.5.5.62
 numpy>=1.21.2,<1.24.0
 pymongo==3.12.1
-DeepFace==0.0.68
+DeepFace==0.0.86
 Werkzeug==2.0.3
+tensorflow==2.12.0
 onnxruntime==1.20.1
