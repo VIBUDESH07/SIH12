@@ -1,13 +1,13 @@
-Flask==2.0.1
-Flask-CORS==3.0.10
-Flask-SocketIO==5.1.1
-opencv-python-headless==4.5.3.56
-numpy==1.21.2
-pymongo==3.12.0
-deepface==0.0.75
-onnxruntime==1.8.1
-gunicorn==20.1.0
-eventlet==0.30.2
-tensorflow==2.6.0
-Keras==2.6.0
+Flask
+Flask-CORS
+Flask-SocketIO
+opencv-python-headless
+numpy
+pymongo
+deepface
+onnxruntime
+gunicorn
+eventlet
+tensorflow
+Keras
 
