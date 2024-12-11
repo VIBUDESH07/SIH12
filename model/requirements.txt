@@ -7,3 +7,4 @@ deepface==0.0.79
 pymongo==4.3.3
 eventlet==0.33.3
 greenlet==2.0.2
+onnxruntime==1.15.1
