@@ -17,7 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/authenticate" element={<LiveFace2 />} />
+        <Route path="/authenticate" element={<Final />} />
         <Route path="/dashboard" element={<DashBoard />} />
       </Routes>
     </div>

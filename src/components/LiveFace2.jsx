@@ -55,7 +55,7 @@ const LiveFaceWebSocket = () => {
   }, [isCameraAllowed, ws]);
 
   useEffect(() => {
-    const socket = require("socket.io-client")("http://172.21.5.21:5000");
+    const socket = require("socket.io-client")("http://54.226.109.189/");
     setWs(socket);
 
     socket.on("connect", () => {
@@ -115,10 +115,20 @@ const LiveFaceWebSocket = () => {
   const checkCameraAndAllow = async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
+      console.log('navigator.mediaDevices:', navigator.mediaDevices);
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices = {
+          enumerateDevices: async () => [
+            { kind: "videoinput", label: "Mock Camera", deviceId: "mock1" },
+          ],
+        };
+      }
       const videoDevices = devices.filter(
         (device) => device.kind === "videoinput"
       );
-
+    
+      
       if (videoDevices.length > 0) {
         const cameraName = videoDevices[0].label;
 
