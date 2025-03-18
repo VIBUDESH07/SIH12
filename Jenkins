@@ -2,19 +2,25 @@ pipeline {
     agent any
 
     environment {
-        NODEJS_HOME = tool 'NodeJS'  // Ensure you have NodeJS installed in Jenkins
+        NODEJS_HOME = tool 'NodeJS'  // Ensure NodeJS is installed in Jenkins
         PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-        IMAGE_NAME = "my-react-app" // Set the Docker image name
+        IMAGE_NAME = "my-react-app"  // Docker image name
         CONTAINER_NAME = "react-container"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/VIBUDESH07/SIH12.git'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[$class: 'CloneOption', depth: 1, noTags: true]], // Shallow clone for faster builds
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: 'https://github.com/VIBUDESH07/SIH12.git']]
+                ])
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -55,3 +61,4 @@ pipeline {
         }
     }
 }
+
