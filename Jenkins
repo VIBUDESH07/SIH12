@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    environment {
+        NODEJS_HOME = tool 'NodeJS'  // Ensure you have NodeJS installed in Jenkins
+        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
+        IMAGE_NAME = "my-react-app" // Set the Docker image name
+        CONTAINER_NAME = "react-container"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/VIBUDESH07/SIH12.git'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test -- --watchAll=false'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME} .'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    sh '''
+                    # Stop and remove the existing container if it exists
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+
+                    # Run a new container
+                    docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
+                    '''
+                }
+            }
+        }
+    }
+}
