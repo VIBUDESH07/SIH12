@@ -42,7 +42,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME} .'
+                sh 'echo "040705"|sudo docker build -t ${IMAGE_NAME} .'
             }
         }
 
@@ -51,11 +51,11 @@ pipeline {
                 script {
                     sh '''
                     # Stop and remove the existing container if it exists
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
+                    echo"040705"|sudo docker stop ${CONTAINER_NAME} || true
+                    echo"040705"|docker rm ${CONTAINER_NAME} || true
 
                     # Run a new container
-                    docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
+                    echo"040705"|docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
                     '''
                 }
             }
