@@ -4,8 +4,9 @@ pipeline {
     environment {
         NODEJS_HOME = tool 'nodejs-23'  // Ensure NodeJS is installed in Jenkins
         PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-        IMAGE_NAME = "my-react-app"  // Docker image name
+        IMAGE_NAME = "my-react-app"      // Docker image name
         CONTAINER_NAME = "react-container"
+        DOCKER_PASSWORD = "040705"        // Docker password
     }
 
     stages {
@@ -14,7 +15,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main']],
                     doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'CloneOption', depth: 1, noTags: true]], // Shallow clone for faster builds
+                    extensions: [[$class: 'CloneOption', depth: 1, noTags: true]], 
                     submoduleCfg: [],
                     userRemoteConfigs: [[url: 'https://github.com/VIBUDESH07/SIH12.git']]
                 ])
@@ -35,31 +36,58 @@ pipeline {
 
         stage('Test') {
             steps {
-               sh 'npm test -- --passWithNoTests'
-
+                sh 'npm test -- --passWithNoTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'echo "040705"|sudo docker build -t ${IMAGE_NAME} .'
+                script {
+                    // Build Docker image
+                    sh "echo '${DOCKER_PASSWORD}' | sudo -S docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+
+        stage('Stop and Remove Existing Container') {
+            steps {
+                script {
+                    // Stop and remove the existing container if running
+                    sh """
+                    if [ \$(sudo docker ps -q -f name=${CONTAINER_NAME}) ]; then
+                        echo '${DOCKER_PASSWORD}' | sudo -S docker stop ${CONTAINER_NAME}
+                        echo '${DOCKER_PASSWORD}' | sudo -S docker rm ${CONTAINER_NAME}
+                    fi
+                    """
+                }
             }
         }
 
         stage('Run Docker Container') {
             steps {
                 script {
-                    sh '''
-                    # Stop and remove the existing container if it exists
-                    echo"040705"|sudo docker stop ${CONTAINER_NAME} || true
-                    echo"040705"|docker rm ${CONTAINER_NAME} || true
+                    // Run the Docker container
+                    sh """
+                    echo '${DOCKER_PASSWORD}' | sudo -S docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
+                    """
+                }
+            }
+        }
 
-                    # Run a new container
-                    echo"040705"|docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
-                    '''
+        stage('Verify Container Running') {
+            steps {
+                script {
+                    // Verify if the container is running
+                    sh """
+                    if sudo docker ps | grep -q ${CONTAINER_NAME}; then
+                        echo "✅ Container ${CONTAINER_NAME} is running."
+                    else
+                        echo "❌ Failed to start container."
+                        exit 1
+                    fi
+                    """
                 }
             }
         }
     }
 }
-
