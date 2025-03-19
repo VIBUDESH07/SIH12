@@ -51,21 +51,30 @@ pipeline {
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and force-remove the existing container if running
                     sh """
                     if [ \$(sudo docker ps -q -f name=${CONTAINER_NAME}) ]; then
+                        echo "🔴 Stopping container: ${CONTAINER_NAME}"
                         echo '${DOCKER_PASSWORD}' | sudo -S docker stop ${CONTAINER_NAME}
-                        sleep 2  # Let the container stop properly
+
+                        # Wait for the container to fully stop before removing
+                        echo "⌛ Waiting for container to stop..."
+                        echo '${DOCKER_PASSWORD}' | sudo -S docker wait ${CONTAINER_NAME}
+
+                        echo "🗑️ Removing container: ${CONTAINER_NAME}"
                         echo '${DOCKER_PASSWORD}' | sudo -S docker rm -f ${CONTAINER_NAME}
-                        
-                        # Retry loop to ensure container is removed
+
+                        # Ensure no dangling containers
+                        echo "🧹 Cleaning up dangling containers..."
+                        echo '${DOCKER_PASSWORD}' | sudo -S docker container prune -f
+
+                        # Retry loop to confirm removal
                         retries=5
                         while [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ] && [ \$retries -gt 0 ]; do
-                            echo "⏳ Waiting for container removal... Retries left: \$retries"
-                            sleep 2
+                            echo "⏳ Waiting for full cleanup... Retries left: \$retries"
+                            sleep 3
                             retries=\$((retries - 1))
                         done
-                        
+
                         if [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
                             echo "❌ Failed to remove container after retries."
                             exit 1
