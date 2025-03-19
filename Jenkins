@@ -57,6 +57,13 @@ pipeline {
                     if [ \$(sudo docker ps -q -f name=${CONTAINER_NAME}) ]; then
                         echo '${DOCKER_PASSWORD}' | sudo -S docker stop ${CONTAINER_NAME}
                         echo '${DOCKER_PASSWORD}' | sudo -S docker rm ${CONTAINER_NAME}
+                        
+                        # Wait until the container is fully removed
+                        while [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ]; do
+                            echo "Waiting for container to be removed..."
+                            sleep 2
+                        done
+                        echo "Container removed successfully."
                     fi
                     """
                 }
