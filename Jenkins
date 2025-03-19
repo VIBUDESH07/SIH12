@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        NODEJS_HOME = tool 'nodejs-23'  // Ensure NodeJS is installed in Jenkins
+        NODEJS_HOME = tool 'nodejs-23'  // Node.js installation in Jenkins
         PATH = "${NODEJS_HOME}/bin:${env.PATH}"
         IMAGE_NAME = "my-react-app"      // Docker image name
         CONTAINER_NAME = "react-container"
@@ -43,7 +43,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image
                     sh "echo '${DOCKER_PASSWORD}' | sudo -S docker build -t ${IMAGE_NAME} ."
                 }
             }
@@ -52,18 +51,27 @@ pipeline {
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and remove the existing container if running
+                    // Stop and force-remove the existing container if running
                     sh """
                     if [ \$(sudo docker ps -q -f name=${CONTAINER_NAME}) ]; then
                         echo '${DOCKER_PASSWORD}' | sudo -S docker stop ${CONTAINER_NAME}
-                        echo '${DOCKER_PASSWORD}' | sudo -S docker rm ${CONTAINER_NAME}
+                        sleep 2  # Let the container stop properly
+                        echo '${DOCKER_PASSWORD}' | sudo -S docker rm -f ${CONTAINER_NAME}
                         
-                        # Wait until the container is fully removed
-                        while [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ]; do
-                            echo "Waiting for container to be removed..."
+                        # Retry loop to ensure container is removed
+                        retries=5
+                        while [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ] && [ \$retries -gt 0 ]; do
+                            echo "⏳ Waiting for container removal... Retries left: \$retries"
                             sleep 2
+                            retries=\$((retries - 1))
                         done
-                        echo "Container removed successfully."
+                        
+                        if [ \$(sudo docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
+                            echo "❌ Failed to remove container after retries."
+                            exit 1
+                        else
+                            echo "✅ Container removed successfully."
+                        fi
                     fi
                     """
                 }
@@ -73,7 +81,6 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Run the Docker container
                     sh """
                     echo '${DOCKER_PASSWORD}' | sudo -S docker run -d -p 3000:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}
                     """
@@ -84,7 +91,6 @@ pipeline {
         stage('Verify Container Running') {
             steps {
                 script {
-                    // Verify if the container is running
                     sh """
                     if sudo docker ps | grep -q ${CONTAINER_NAME}; then
                         echo "✅ Container ${CONTAINER_NAME} is running."
